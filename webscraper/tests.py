@@ -25,3 +25,4 @@ class ExampleTest(TestCase):
     def test_sub_numbers(self):
         self.assertEqual(sub_numbers(1, 1), 0)
         self.assertEqual(sub_numbers(-1, -1), 0)
+        self.assertEqual(sub_numbers(1, -1), 2)
