@@ -26,3 +26,4 @@ class ExampleTest(TestCase):
         self.assertEqual(sub_numbers(1, 1), 0)
         self.assertEqual(sub_numbers(-1, -1), 0)
         self.assertEqual(sub_numbers(1, -1), 2)
+        self.assertEqual(sub_numbers(0, 0), 0)
