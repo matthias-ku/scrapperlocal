@@ -21,6 +21,7 @@ class ExampleTest(TestCase):
         self.assertEqual(add_numbers(1, 1), 2)
         self.assertEqual(add_numbers(0, 0), 0)
         self.assertEqual(add_numbers(-1, -1), -2)
+        self.assertEqual(add_numbers(1, -1), 0)
 
     def test_sub_numbers(self):
         self.assertEqual(sub_numbers(1, 1), 0)
