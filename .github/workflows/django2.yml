@@ -1,0 +1,73 @@
+name: Django CI/CD Docker
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+  workflow_dispatch:    # Allows manual trigger via the GitHub UI
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 4
+
+    services:
+      db:
+        image: postgres
+        env:
+          POSTGRES_DB: scrapper_db
+          POSTGRES_USER: scrapper_user
+          POSTGRES_PASSWORD: password123
+        ports:
+          - 5432:5432
+
+    steps:
+    # 1. Checkout repo
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12'
+
+    # 3. Install dependencies
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    # 4. Run tests
+    - name: Run Tests
+      run: |
+        coverage run manage.py test --keepdb
+        coverage report -m      
+
+    # 5. Run mutation tests
+    - name: Mutation Tests
+      run: |
+        cosmic-ray init cosmic-ray.toml cosmic-ray.sqlite
+        cr-filter-pragma cosmic-ray.sqlite
+        cosmic-ray --verbosity=INFO baseline cosmic-ray.toml
+        cosmic-ray --verbosity=INFO exec cosmic-ray.toml cosmic-ray.sqlite
+
+    # 6. Report mutation tests
+    - name: Mutation Tests
+      run: |
+        cr-report cosmic-ray.sqlite --show-pending  
+        cr-html cosmic-ray.sqlite > report.html
+
+    # 9. Upload coverage reports to Codecov
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
